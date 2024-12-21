@@ -1,0 +1,163 @@
+return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPower, setOffsetX, setOffsetY, setOffsetZ)
+	local function isDirectionBehind(direction)
+		local forwardVector = player.Character.HumanoidRootPart.CFrame.LookVector
+		return forwardVector:Dot(direction) < 0
+	end
+
+	local function findNearestAntennaOnCursor()
+		local mouse = player:GetMouse()
+		local nearestAntenna = nil
+		local shortestDistance = math.huge
+
+		for _, antenna in pairs(workspace:GetDescendants()) do
+			if antenna:IsA("BasePart") and antenna.Parent.Parent.Name == "NetPost" then
+				local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(antenna.Position)
+				local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+				if mouseDistance < shortestDistance then
+					shortestDistance = mouseDistance
+					nearestAntenna = antenna
+				end
+			end
+		end
+
+		return nearestAntenna
+	end
+
+	local function findNearestPlayerOnCursor()
+		local mouse = player:GetMouse()
+		local nearestPlayer = nil
+		local shortestDistance = math.huge
+
+		for _, plr in pairs(players:GetPlayers()) do
+			if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") and plr.Team == player.Team then
+				local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(plr.Character.Head.Position)
+				local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+				if mouseDistance < shortestDistance then
+					shortestDistance = mouseDistance
+					nearestPlayer = plr
+				end
+			end
+		end
+
+		return nearestPlayer
+	end
+
+	local SettingSection = tab:AddSection({
+		Name = "Setting"
+	})
+
+	SettingSection:AddToggle({
+		Name = "Enable Auto Set",
+		Default = false,
+		Callback = function(Value)
+			autoSetEnabled = Value
+		end    
+	})
+
+	local setlabel = SettingSection:AddLabel("Setting To: None")
+
+	SettingSection:AddSlider({
+		Name = "Setting Power",
+		Min = 0,
+		Max = 200,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Power",
+		Callback = function(Value)
+			setPower = Value
+		end    
+	})
+
+	SettingSection:AddSlider({
+		Name = "Setting X Offset",
+		Min = -150,
+		Max = 150,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "X Offset",
+		Callback = function(Value)
+			setOffsetX = Value
+		end    
+	})
+
+	SettingSection:AddSlider({
+		Name = "Setting Y Offset",
+		Min = 0,
+		Max = 150,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Y Offset",
+		Callback = function(Value)
+			setOffsetY = Value
+		end    
+	})
+
+	SettingSection:AddSlider({
+		Name = "Setting Z Offset",
+		Min = -150,
+		Max = 150,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Z Offset",
+		Callback = function(Value)
+			setOffsetZ = Value
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Setting Keybind",
+		Default = Enum.KeyCode.E,
+		Hold = false,
+		Callback = function()
+			if autoSetEnabled then
+				local nearestPlayer = findNearestPlayerOnCursor()
+				if nearestPlayer then
+					setlabel:Set("Setting To: " .. nearestPlayer.Name)
+					local direction = (nearestPlayer.Character.Head.Position + Vector3.new(setOffsetX, setOffsetY, setOffsetZ) - player.Character.HumanoidRootPart.Position).Unit
+					if isDirectionBehind(direction) then
+						backSet:Play()
+					else
+						frontSet:Play()
+					end
+
+					local args = {
+						[1] = direction,
+						[2] = setPower
+					}
+					game:GetService("ReplicatedStorage"):WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+				end
+			end
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Setting To Antenna Keybind",
+		Default = Enum.KeyCode.T,
+		Hold = false,
+		Callback = function()
+			if autoSetEnabled then
+				local nearestAntenna = findNearestAntennaOnCursor()
+				if nearestAntenna then
+					setlabel:Set("Setting To: Antenna")
+					local direction = (nearestAntenna.Position + Vector3.new(setOffsetX, setOffsetY, setOffsetZ) - player.Character.HumanoidRootPart.Position).Unit
+					if isDirectionBehind(direction) then
+						backSet:Play()
+					else
+						frontSet:Play()
+					end
+
+					local args = {
+						[1] = direction,
+						[2] = setPower
+					}
+					game:GetService("ReplicatedStorage"):WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+				end
+			end
+		end    
+	})
+
+end
