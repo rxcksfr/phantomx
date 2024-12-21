@@ -1,0 +1,135 @@
+return function(autoSetEnabled, setPower, setOffset)
+    local function findNearestAntennaOnCursor()
+	local mouse = LocalPlayer:GetMouse()
+	local nearestAntenna = nil
+	local shortestDistance = math.huge
+
+	for _, antenna in pairs(workspace:GetDescendants()) do
+		if  antenna:IsA("BasePart") and antenna.Parent.Parent.Name == "NetPost" then
+			print("found")
+			local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(antenna.Position)
+			local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+			if mouseDistance < shortestDistance then
+				shortestDistance = mouseDistance
+				nearestAntenna = antenna
+			end
+		end
+	end
+
+	return nearestAntenna
+end
+
+local function findNearestPlayerOnCursor()
+	local mouse = LocalPlayer:GetMouse()
+	local nearestPlayer = nil
+	local shortestDistance = math.huge
+
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") and player.Team == LocalPlayer.Team then
+			local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(player.Character.Head.Position)
+			local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+			if mouseDistance < shortestDistance then
+				shortestDistance = mouseDistance
+				nearestPlayer = player
+			end
+		end
+	end
+
+	return nearestPlayer
+end
+
+local SettingSection = Tab:AddSection({
+	Name = "Setting"
+})
+
+SettingSection:AddToggle({
+	Name = "Enable Auto Set",
+	Default = false,
+	Callback = function(Value)
+		autoSetEnabled = Value
+		print(autoSetEnabled)
+	end    
+})
+
+local setlabel = SettingSection:AddLabel("Setting To: None")
+
+SettingSection:AddSlider({
+	Name = "Setting Power",
+	Min = 0,
+	Max = 200,
+	Default = 0,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Power",
+	Callback = function(Value)
+		setPower = Value
+		print(setPower)
+	end    
+})
+
+SettingSection:AddSlider({
+	Name = "Setting Offset",
+	Min = 0,
+	Max = 150,
+	Default = 0,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Offset",
+	Callback = function(Value)
+		setOffset = Value
+		print(setOffset)
+	end    
+})
+
+SettingSection:AddBind({
+	Name = "Setting Keybind",
+	Default = Enum.KeyCode.E,
+	Hold = false,
+	Callback = function()
+		if autoSetEnabled then
+			local nearestPlayer = findNearestPlayerOnCursor()
+			setlabel:Set("Setting To: ".. nearestPlayer.Name)
+			if nearestPlayer then
+				local direction = (nearestPlayer.Character.Head.Position + Vector3.new(0, setOffset, 0) - LocalPlayer.Character.HumanoidRootPart.Position).Unit
+				if isDirectionBehind(direction) then
+					backAnimTrack:Play()
+				else
+					frontAnimTrack:Play()
+				end
+
+				local args = {
+					[1] = direction,
+					[2] = setPower
+				}
+				ReplicatedStorage:WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+			end
+		end
+	end    
+})
+
+SettingSection:AddBind({
+	Name = "Setting To Antenna Keybind",
+	Default = Enum.KeyCode.T,
+	Hold = false,
+	Callback = function()
+		if autoSetEnabled then
+			local nearestAntenna = findNearestAntennaOnCursor()
+			setlabel:Set("Setting To: Antenna")
+			if nearestAntenna then
+				local direction = (nearestAntenna.Position + Vector3.new(0, setOffset, 0) - LocalPlayer.Character.HumanoidRootPart.Position).Unit
+				if isDirectionBehind(direction) then
+					backAnimTrack:Play()
+				else
+					frontAnimTrack:Play()
+				end
+
+				local args = {
+					[1] = direction,
+					[2] = setPower
+				}
+				ReplicatedStorage:WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+			end
+		end
+	end    
+})
+end
