@@ -1,1 +1,38 @@
+return function(player, Window)
+	local ShotPower = 50
 
+	local ShootingTab = Window:CreateTab("Shooting")
+
+	local ShotPowerSlider = ShootingTab:CreateSlider({
+		Name = "Shot Power",
+		Range = {25, 300},
+		Increment = 1,
+		Suffix = "Shot Power",
+		CurrentValue = 50,
+		Flag = "ShotPowerSlider",
+		Callback = function(Value)
+			ShotPower = Value
+		end,
+	})
+
+	local ShootBind = ShootingTab:CreateKeybind({
+		Name = "Shoot Bind",
+		CurrentKeybind = "T",
+		HoldToInteract = false,
+		Flag = "ShootBind",
+		Callback = function(Keybind)
+			local args = {
+				[1] = false
+			}
+
+			game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("HasShot"):FireServer(unpack(args))
+			local args = {
+				[1] = ShotPower,
+				[4] = Vector3.new(0.8965893983840942, 0.430350124835968, -0.1045282632112503)
+			}
+
+			game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("BallService"):WaitForChild("RE"):WaitForChild("Shoot"):FireServer(unpack(args))
+
+		end,
+	}) 
+end
