@@ -61,8 +61,8 @@ return function(player, players, tab, autoRecieveEnabled, recievePower, recieveO
 	
 	RecieveSection:AddSlider({
 		Name = "Recieve Threshold",
-		Min = -4,
-		Max = 4,
+		Min = -20,
+		Max = 20,
 		Default = 2,
 		Color = Color3.fromRGB(255,255,255),
 		Increment = 1,
