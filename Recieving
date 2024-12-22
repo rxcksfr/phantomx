@@ -1,4 +1,4 @@
-return function(player, players, tab, autoRecieveEnabled, recievePower, recieveOffset)
+return function(recieveCharge, player, players, tab, autoRecieveEnabled, recievePower, recieveOffset)
 	local recieveDebounce = false
 	local recieveThreshold = 2
 
