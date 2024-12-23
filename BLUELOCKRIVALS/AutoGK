@@ -1,0 +1,97 @@
+return function(Window)
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Workspace = game:GetService("Workspace")
+
+    local LocalPlayer = Players.LocalPlayer
+    local DetectionRadius = 20
+    local MovementFolder = ReplicatedStorage.Assets.ReplicatedAnims.Movement
+    local DiveLeftAnimation = MovementFolder.DiveL
+    local DiveRightAnimation = MovementFolder.DiveR
+
+    local autoDiveEnabled = false
+    local isCooldown = false
+    local CooldownTime = 1
+
+    local GKTab = Window:CreateTab("Ball")
+
+	local AutoGK = GKTab:CreateToggle({
+		Name = "Auto GK",
+		CurrentValue = false,
+		Flag = "AutoGKToggle",
+		Callback = function(Value)
+			autoDiveEnabled = Value
+		end,
+	})
+
+local function playDiveAnimation(direction)
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local diveAnimation
+        if direction == "Left" then
+            diveAnimation = humanoid:LoadAnimation(DiveLeftAnimation)
+        elseif direction == "Right" then
+            diveAnimation = humanoid:LoadAnimation(DiveRightAnimation)
+        end
+        if diveAnimation then
+            diveAnimation:Play()
+        end
+    end
+end
+
+local function diveToDirection(direction, isJump)
+    local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+
+    if isJump then
+        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+    bodyVelocity.Velocity = humanoidRootPart.CFrame.RightVector * (direction == "LeftBottom" or direction == "LeftTop" and -50 or 50) +
+                            Vector3.new(0, (isJump and 50 or 0), 0)
+
+    bodyVelocity.Parent = humanoidRootPart
+    game.Debris:AddItem(bodyVelocity, 0.5)
+end
+
+local function detectFootball()
+    if not autoDiveEnabled or isCooldown or not LocalPlayer.Character then return end
+
+    local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+
+    for _, ball in ipairs(Workspace:GetChildren()) do
+        if ball.Name == "Football" then
+            local distance = (humanoidRootPart.Position - ball.Position).Magnitude
+            if distance <= DetectionRadius then
+                ReplicatedStorage.Packages.Knit.Services.BallService.RE.Dive:FireServer()
+
+                local relativePosition = humanoidRootPart.CFrame:PointToObjectSpace(ball.Position)
+
+                if relativePosition.X < 0 then
+                    if relativePosition.Y > 0 then
+                        diveToDirection("LeftTop", true)
+                    else
+                        diveToDirection("LeftBottom", false)
+                    end
+                else
+                    if relativePosition.Y > 0 then
+                        diveToDirection("RightTop", true)
+                    else
+                        diveToDirection("RightBottom", false)
+                    end
+                end
+                isCooldown = true
+                wait(CooldownTime)
+                isCooldown = false
+            end
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(detectFootball)
+
+end
