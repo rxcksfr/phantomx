@@ -1,4 +1,4 @@
-return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPower, setOffsetX, setOffsetY, setOffsetZ)
+return function(backSet, frontSet, player, players, window, autoSetEnabled, setPower, setOffsetX, setOffsetY, setOffsetZ)
 	local function isDirectionBehind(direction)
 		local forwardVector = player.Character.HumanoidRootPart.CFrame.LookVector
 		return forwardVector:Dot(direction) < 0
@@ -41,6 +41,19 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 
 		return nearestPlayer
 	end
+	
+	local quicksetpresetpower = 150
+	local highsetpresetpower = 100
+	local medsetpresetpower = 125
+	local quicksetpresetoffset = 2
+	local highsetpresetoffset = 55
+	local medsetpresetoffset = 25
+	
+	local tab = window:MakeTab({
+		Name = "Setting",
+		Icon = "rbxassetid://0",
+		PremiumOnly = false
+	})
 
 	local SettingSection = tab:AddSection({
 		Name = "Setting"
@@ -56,7 +69,7 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 
 	local setlabel = SettingSection:AddLabel("Setting To: None")
 
-	SettingSection:AddSlider({
+	local setpowerslider = SettingSection:AddSlider({
 		Name = "Setting Power",
 		Min = 0,
 		Max = 200,
@@ -69,7 +82,7 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 		end    
 	})
 
-	SettingSection:AddSlider({
+	local setoffsetxslider = SettingSection:AddSlider({
 		Name = "Setting X Offset",
 		Min = -150,
 		Max = 150,
@@ -82,7 +95,7 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 		end    
 	})
 
-	SettingSection:AddSlider({
+	local setoffsetyslider = SettingSection:AddSlider({
 		Name = "Setting Y Offset",
 		Min = 0,
 		Max = 150,
@@ -95,10 +108,10 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 		end    
 	})
 
-	SettingSection:AddSlider({
+	local setoffsetzslider = SettingSection:AddSlider({
 		Name = "Setting Z Offset",
-		Min = -150,
-		Max = 150,
+		Min = -5,
+		Max = 5,
 		Default = 0,
 		Color = Color3.fromRGB(255,255,255),
 		Increment = 1,
@@ -133,7 +146,103 @@ return function(backSet, frontSet, player, players, tab, autoSetEnabled, setPowe
 			end
 		end    
 	})
+	
+	SettingSection:AddBind({
+		Name = "Quick Set Preset Keybind",
+		Default = Enum.KeyCode.P,
+		Hold = false,
+		Callback = function()
+			setpowerslider:Set(quicksetpresetpower)
+		end    
+	})
+	
+	SettingSection:AddBind({
+		Name = "High Set Preset Keybind",
+		Default = Enum.KeyCode.L,
+		Hold = false,
+		Callback = function()
+			setpowerslider:Set(highsetpresetpower)
+		end    
+	})
+	
+	SettingSection:AddBind({
+		Name = "Medium Set Preset Keybind",
+		Default = Enum.KeyCode.K,
+		Hold = false,
+		Callback = function()
+			setpowerslider:Set(medsetpresetpower)
+		end    
+	})
+	
+	SettingSection:AddBind({
+		Name = "Z Offset Side Changer Keybind",
+		Default = Enum.KeyCode.J,
+		Hold = false,
+		Callback = function()
+			if setOffsetZ > 0 then
+				setOffsetZ = setOffsetZ - setOffsetZ - setOffsetZ	
+			elseif setOffsetZ < 0 then
+				setOffsetZ = setOffsetZ - setOffsetZ - setOffsetZ
+			else
+				setOffsetZ = 0
+			end
+		end    
+	})
+	
+	SettingSection:AddTextbox({
+		Name = "Quick Set Preset Power",
+		Default = 150,
+		TextDisappear = false,
+		Callback = function(Value)
+			quicksetpresetpower = Value
+		end	  
+	})
+	
+	SettingSection:AddTextbox({
+		Name = "High Set Preset Power",
+		Default = 100,
+		TextDisappear = false,
+		Callback = function(Value)
+			highsetpresetpower = Value
+		end	  
+	})
+	
+	SettingSection:AddTextbox({
+		Name = "Medium Set Preset Power",
+		Default = 125,
+		TextDisappear = false,
+		Callback = function(Value)
+			medsetpresetpower = Value
+		end	  
+	})
+	
+	SettingSection:AddTextbox({
+		Name = "Quick Set Preset Offset",
+		Default = 2,
+		TextDisappear = false,
+		Callback = function(Value)
+			quicksetpresetoffset = Value
+		end	  
+	})
 
+	SettingSection:AddTextbox({
+		Name = "High Set Preset Offset",
+		Default = 55,
+		TextDisappear = false,
+		Callback = function(Value)
+			highsetpresetoffset = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "Medium Set Preset Offset",
+		Default = 25,
+		TextDisappear = false,
+		Callback = function(Value)
+			medsetpresetoffset = Value
+		end	  
+	})
+	
 	SettingSection:AddBind({
 		Name = "Setting To Antenna Keybind",
 		Default = Enum.KeyCode.T,
