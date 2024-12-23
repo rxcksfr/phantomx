@@ -1,0 +1,37 @@
+return function(Window)
+   local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local infStaminaEnabled = false
+local debounce = false
+
+local PlayerTab = Window:CreateTab("Player")
+	
+	local InfStaminaToggle = PlayerTab:CreateToggle({
+		Name = "Inf Stamina ",
+		CurrentValue = false,
+		Flag = "Inf Stamina Toggle",
+		Callback = function(Value)
+			infStaminaEnabled = Value
+		end,
+	})
+
+local function useAbility()
+    if infStaminaEnabled then
+        local args = { [1] = "Tiredless" }
+        ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("AbilityService"):WaitForChild("RE"):WaitForChild("Ability"):FireServer(unpack(args))
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+if debounce == false then
+debounce = true
+ useAbility()
+        wait(17)
+debounce = false
+end
+
+       
+end)
+
+end
