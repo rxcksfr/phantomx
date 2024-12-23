@@ -1,0 +1,369 @@
+return function(lib, backSet, frontSet, player, players, window, autoSetEnabled, setPower, setOffsetX, setOffsetY, setOffsetZ)
+	local function isDirectionBehind(direction)
+		local forwardVector = player.Character.HumanoidRootPart.CFrame.LookVector
+		return forwardVector:Dot(direction) < 0
+	end
+
+	local function findNearestAntennaOnCursor()
+		local mouse = player:GetMouse()
+		local nearestAntenna = nil
+		local shortestDistance = math.huge
+
+		for _, antenna in pairs(workspace:GetDescendants()) do
+			if antenna:IsA("BasePart") and antenna.Parent.Parent.Name == "NetPost" then
+				local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(antenna.Position)
+				local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+				if mouseDistance < shortestDistance then
+					shortestDistance = mouseDistance
+					nearestAntenna = antenna
+				end
+			end
+		end
+
+		return nearestAntenna
+	end
+
+	local function findNearestPlayerOnCursor()
+		local mouse = player:GetMouse()
+		local nearestPlayer = nil
+		local shortestDistance = math.huge
+
+		for _, plr in pairs(players:GetPlayers()) do
+			if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") and plr.Team == player.Team then
+				local playerScreenPosition = workspace.CurrentCamera:WorldToScreenPoint(plr.Character.Head.Position)
+				local mouseDistance = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(playerScreenPosition.X, playerScreenPosition.Y)).Magnitude
+				if mouseDistance < shortestDistance then
+					shortestDistance = mouseDistance
+					nearestPlayer = plr
+				end
+			end
+		end
+
+		return nearestPlayer
+	end
+
+	local quicksetpresetpower = 150
+	local highsetpresetpower = 100
+	local medsetpresetpower = 125
+	local quicksetpresetoffset = 2
+	local highsetpresetoffset = 55
+	local medsetpresetoffset = 25
+
+	local tab = window:MakeTab({
+		Name = "Setting",
+		Icon = "rbxassetid://0",
+		PremiumOnly = false
+	})
+
+	local SettingSection = tab:AddSection({
+		Name = "Setting"
+	})
+
+	SettingSection:AddToggle({
+		Name = "Enable Auto Set",
+		Default = false,
+		Callback = function(Value)
+			autoSetEnabled = Value
+			if Value == true then
+				lib:MakeNotification({
+					Name = "Setting",
+					Content = "You have enabled auto set",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			else
+				lib:MakeNotification({
+					Name = "Setting",
+					Content = "You have disabled auto set",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			end
+		end    
+	})
+
+	local setlabel = SettingSection:AddLabel("Setting To: None")
+
+	local setpowerslider = SettingSection:AddSlider({
+		Name = "Setting Power",
+		Min = 0,
+		Max = 200,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Power",
+		Callback = function(Value)
+			setPower = Value
+		end    
+	})
+
+	local setoffsetxslider = SettingSection:AddSlider({
+		Name = "Setting X Offset",
+		Min = -10,
+		Max = 10,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "X Offset",
+		Callback = function(Value)
+			setOffsetX = Value
+		end    
+	})
+
+	local setoffsetyslider = SettingSection:AddSlider({
+		Name = "Setting Y Offset",
+		Min = 0,
+		Max = 150,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Y Offset",
+		Callback = function(Value)
+			setOffsetY = Value
+		end    
+	})
+
+	local setoffsetzslider = SettingSection:AddSlider({
+		Name = "Setting Z Offset",
+		Min = -5,
+		Max = 5,
+		Default = 0,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Z Offset",
+		Callback = function(Value)
+			setOffsetZ = Value
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Setting Keybind",
+		Default = Enum.KeyCode.E,
+		Hold = false,
+		Callback = function()
+			if autoSetEnabled then
+				local nearestPlayer = findNearestPlayerOnCursor()
+				if nearestPlayer then
+					lib:MakeNotification({
+						Name = "Setting",
+						Content = "You have set to" .. nearestPlayer.Name..".",
+						Image = "rbxassetid://0",
+						Time = 1
+					})
+					setlabel:Set("Setting To: " .. nearestPlayer.Name)
+					local direction = (nearestPlayer.Character.Head.Position + Vector3.new(setOffsetX, setOffsetY, setOffsetZ) - player.Character.HumanoidRootPart.Position).Unit
+					if isDirectionBehind(direction) then
+						backSet:Play()
+					else
+						frontSet:Play()
+					end
+
+					local args = {
+						[1] = direction,
+						[2] = setPower
+					}
+					game:GetService("ReplicatedStorage"):WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+				end
+			end
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Quick Set Preset Keybind",
+		Default = Enum.KeyCode.P,
+		Hold = false,
+		Callback = function()
+			lib:MakeNotification({
+				Name = "Setting",
+				Content = "You have enabled the quick preset.",
+				Image = "rbxassetid://0",
+				Time = 1
+			})
+			setpowerslider:Set(quicksetpresetpower)
+			setoffsetyslider:Set(quicksetpresetoffset)
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "High Set Preset Keybind",
+		Default = Enum.KeyCode.L,
+		Hold = false,
+		Callback = function()
+			lib:MakeNotification({
+				Name = "Setting",
+				Content = "You have enabled the high preset.",
+				Image = "rbxassetid://0",
+				Time = 1
+			})
+			setpowerslider:Set(highsetpresetpower)
+			setoffsetyslider:Set(highsetpresetoffset)
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Medium Set Preset Keybind",
+		Default = Enum.KeyCode.K,
+		Hold = false,
+		Callback = function()
+			lib:MakeNotification({
+				Name = "Setting",
+				Content = "You have enabled the medium preset.",
+				Image = "rbxassetid://0",
+				Time = 1
+			})
+			setpowerslider:Set(medsetpresetpower)
+			setoffsetyslider:Set(medsetpresetoffset)
+		end    
+	})
+
+	SettingSection:AddBind({
+		Name = "Z Offset Side Changer Keybind",
+		Default = Enum.KeyCode.J,
+		Hold = false,
+		Callback = function()
+			setoffsetzslider:Set(setOffsetZ - setOffsetZ - setOffsetZ)
+			if setOffsetZ > 0 then
+				lib:MakeNotification({
+					Name = "Z Offset",
+					Content = "Z Offset is on the right side.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			elseif setOffsetZ < 0 then
+				lib:MakeNotification({
+					Name = "Z Offset",
+					Content = "Z Offset is on the left side.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			else
+				setoffsetzslider:Set(0)
+				lib:MakeNotification({
+					Name = "Z Offset",
+					Content = "Z Offset is neutral.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			end
+		end    
+	})
+	
+	SettingSection:AddBind({
+		Name = "X Offset Side Changer Keybind",
+		Default = Enum.KeyCode.H,
+		Hold = false,
+		Callback = function()
+			setoffsetxslider:Set(setOffsetX - setOffsetX - setOffsetX)
+			if setOffsetX > 0 then
+				lib:MakeNotification({
+					Name = "X Offset",
+					Content = "X Offset is to the right of the left antenna.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			elseif setOffsetX < 0 then
+				lib:MakeNotification({
+					Name = "X Offset",
+					Content = "X Offset is to the left of the right antenna.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			else
+				setoffsetxslider:Set(0)
+				lib:MakeNotification({
+					Name = "X Offset",
+					Content = "X Offset is neutral.",
+					Image = "rbxassetid://0",
+					Time = 1
+				})
+			end
+		end    
+	})
+
+	SettingSection:AddTextbox({
+		Name = "Quick Set Preset Power",
+		Default = 150,
+		TextDisappear = false,
+		Callback = function(Value)
+			quicksetpresetpower = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "High Set Preset Power",
+		Default = 100,
+		TextDisappear = false,
+		Callback = function(Value)
+			highsetpresetpower = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "Medium Set Preset Power",
+		Default = 125,
+		TextDisappear = false,
+		Callback = function(Value)
+			medsetpresetpower = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "Quick Set Preset Offset",
+		Default = 2,
+		TextDisappear = false,
+		Callback = function(Value)
+			quicksetpresetoffset = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "High Set Preset Offset",
+		Default = 55,
+		TextDisappear = false,
+		Callback = function(Value)
+			highsetpresetoffset = Value
+		end	  
+	})
+
+	SettingSection:AddTextbox({
+		Name = "Medium Set Preset Offset",
+		Default = 25,
+		TextDisappear = false,
+		Callback = function(Value)
+			medsetpresetoffset = Value
+		end	  
+	})
+
+	SettingSection:AddBind({
+		Name = "Setting To Antenna Keybind",
+		Default = Enum.KeyCode.T,
+		Hold = false,
+		Callback = function()
+			if autoSetEnabled then
+				local nearestAntenna = findNearestAntennaOnCursor()
+				if nearestAntenna then
+					lib:MakeNotification({
+						Name = "Setting",
+						Content = "You have set to the antenna.",
+						Image = "rbxassetid://0",
+						Time = 1
+					})
+					setlabel:Set("Setting To: Antenna")
+					local direction = (nearestAntenna.Position + Vector3.new(setOffsetX, setOffsetY, setOffsetZ) - player.Character.HumanoidRootPart.Position).Unit
+					if isDirectionBehind(direction) then
+						backSet:Play()
+					else
+						frontSet:Play()
+					end
+
+					local args = {
+						[1] = direction,
+						[2] = setPower
+					}
+					game:GetService("ReplicatedStorage"):WaitForChild("Mechanics"):WaitForChild("Set"):FireServer(unpack(args))
+				end
+			end
+		end    
+	})
+
+end
