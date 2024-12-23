@@ -55,8 +55,6 @@ print("test something")
 print("playing anim")
 					return true
 				end
-				print(track.Animation.Name)
-				print(track.Animation)
 			end
 		end
 		return false
@@ -64,14 +62,13 @@ print("playing anim")
 
 	local function detectNearbyPlayers()
 		if not autoDribbleEnabled or isCooldown then return end
-print("auto dribble on")
 		for _, player in ipairs(Players:GetPlayers()) do
 			if player ~= LocalPlayer and player.Character then
 				local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
 				if distance <= DetectionRadius and isPlayingSlideAnimation(player.Character) then
+					isCooldown = true
 print("worked")
 					playDribbleAnimation()
-					isCooldown = true
 					wait(CooldownTime)
 					isCooldown = false
 				end
