@@ -3,6 +3,7 @@ return function(Window)
 local RunService = game:GetService("RunService")
 
 local infStaminaEnabled = false
+local debounce = false
 
 local PlayerTab = Window:CreateTab("Player")
 	
@@ -23,8 +24,13 @@ local function useAbility()
 end
 
 RunService.Heartbeat:Connect(function()
+if debounce == false then
+debounce = true
  useAbility()
         wait(17)
+debounce = false
+end
+
        
 end)
 
