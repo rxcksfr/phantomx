@@ -50,10 +50,13 @@ print("test something")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-				if track.Animation == SlideAnimationPath then
+				
+				if track.Animation.AnimationId == SlideAnimationPath.AnimationId then
 print("playing anim")
 					return true
 				end
+				print(track.Animation.Name)
+				print(track.Animation)
 			end
 		end
 		return false
