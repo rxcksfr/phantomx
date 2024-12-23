@@ -1,0 +1,87 @@
+return function(player, Window)
+	local predictionEnabled = false
+	
+	local BallTab = Window:CreateTab("Ball")
+
+	local BallPrediction = BallTab:CreateToggle({
+		Name = "Ball Prediction",
+		CurrentValue = false,
+		Flag = "BallPredictionToggle",
+		Callback = function(Value)
+			predictionEnabled = Value
+		end,
+	})
+
+	local RunService = game:GetService("RunService")
+	local Workspace = game:GetService("Workspace")
+	local BallName = "Football"
+	local PredictionDuration = 2
+	local TimeStep = 0.05
+	local LandingBallSize = Vector3.new(1, 20, 10)
+	local previousLandingBall
+	local positionThreshold = 5
+	local Paths = {}
+	
+	local function predictBallPath(initialPosition, initialVelocity, duration, timeStep)
+		local positions = {}
+		local gravity = Vector3.new(0, -Workspace.Gravity, 0)
+		local currentPosition = initialPosition
+		local currentVelocity = initialVelocity
+
+		for t = 0, duration, timeStep do
+			table.insert(positions, currentPosition)
+			currentVelocity = currentVelocity + gravity * timeStep
+			currentPosition = currentPosition + currentVelocity * timeStep
+			if currentPosition.Y <= 0 then
+				currentPosition = Vector3.new(currentPosition.X, 8.1, currentPosition.Z)
+				break
+			end
+		end
+
+		return currentPosition
+	end
+
+	local function visualizeLandingPosition(position)
+		if previousLandingBall then
+			previousLandingBall:Destroy()
+		end
+
+		local part = Instance.new("Part")
+		part.Shape = Enum.PartType.Cylinder
+		part.Size = LandingBallSize
+		part.Position = position
+		part.Name = "BallPredict"
+		part.Anchored = true
+		part.Transparency = 0.5
+		part.CanCollide = false
+		part.Color = Color3.fromRGB(255, 255, 0)
+		part.Parent = Workspace
+		part.Orientation = Vector3.new(0, 0, 90)
+
+		game.Debris:AddItem(part, 5)
+		previousLandingBall = part
+	end
+
+	local function hasPositionChanged(oldPosition, newPosition, threshold)
+		return (oldPosition - newPosition).Magnitude > threshold
+	end
+
+	local function detectAndPredictBalls()
+		local ball = Workspace:FindFirstChild(BallName)
+
+		if ball and predictionEnabled and ball.Position.Y > 11 then
+			local initialVelocity = ball.AssemblyLinearVelocity
+			if Paths[ball] == nil or Paths[ball].lastVelocity ~= initialVelocity then
+				local initialPosition = ball.Position
+				local landingPosition = predictBallPath(initialPosition, initialVelocity, PredictionDuration, TimeStep)
+
+				if Paths[ball] == nil or hasPositionChanged(Paths[ball].lastPosition, landingPosition, positionThreshold) then
+					visualizeLandingPosition(landingPosition)
+					Paths[ball] = { lastVelocity = initialVelocity, lastPosition = landingPosition }
+				end
+			end
+		end
+	end
+
+	RunService.Heartbeat:Connect(detectAndPredictBalls)
+end
