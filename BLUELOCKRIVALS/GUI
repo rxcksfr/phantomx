@@ -1,0 +1,10 @@
+return function(player, Window)
+local GUITab = Window:CreateTab("Gui")
+
+local DestroyGUIButton = GUITab:CreateButton({
+   Name = "Destroy GUI",
+   Callback = function()
+       Rayfield:Destroy()
+   end,
+})
+end
