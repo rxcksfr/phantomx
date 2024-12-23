@@ -14,7 +14,7 @@ return function(Window)
     local isCooldown = false
     local CooldownTime = 1
 
-    local GKTab = Window:CreateTab("Ball")
+    local GKTab = Window:CreateTab("GK")
 
 	local AutoGK = GKTab:CreateToggle({
 		Name = "Auto GK",
@@ -22,6 +22,18 @@ return function(Window)
 		Flag = "AutoGKToggle",
 		Callback = function(Value)
 			autoDiveEnabled = Value
+		end,
+	})
+
+    local ThresholdSlider = GKTab:CreateSlider({
+		Name = "Threshold",
+		Range = {5, 150},
+		Increment = 1,
+		Suffix = "Threshold",
+		CurrentValue = 20,
+		Flag = "ThresholdSlider",
+		Callback = function(Value)
+			DetectionRadius = Value
 		end,
 	})
 
