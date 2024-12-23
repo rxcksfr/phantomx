@@ -1,4 +1,4 @@
-return function(player, Window)
+return function(player, Window, Rayfield)
 local GUITab = Window:CreateTab("Gui")
 
 local DestroyGUIButton = GUITab:CreateButton({
