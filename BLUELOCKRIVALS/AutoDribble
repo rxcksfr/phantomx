@@ -1,0 +1,80 @@
+return function(Window)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+	local LocalPlayer = Players.LocalPlayer
+	local SlideAnimationPath = ReplicatedStorage.Assets.ReplicatedAnims.Movement.Slide
+	local DribbleAnimationsPath = ReplicatedStorage.Assets.ReplicatedAnims.Dribbles
+print("started")
+	local DetectionRadius = 10
+	local CooldownTime = 1
+	local isCooldown = false
+	local autoDribbleEnabled = false
+	
+	local CurrentDribbleAnimation = "Rin"
+
+	local DribbleTab = Window:CreateTab("Dribble")
+	
+	local AutoDribbleToggle = DribbleTab:CreateToggle({
+		Name = "Auto Dribble ",
+		CurrentValue = false,
+		Flag = "AutoDribbleToggle",
+		Callback = function(Value)
+			autoDribbleEnabled = Value
+		end,
+	})
+
+	local DribbleAnimationDropdown = DribbleTab:CreateDropdown({
+		Name = "Dribble Animation",
+		Options = {"Rin","Sai","Aiku","Bachira","Gagamaru","Chigiri","Isagi","King","Nagi","Sae","Shidou"},
+		CurrentOption = {"Rin"},
+		MultipleOptions = false,
+		Flag = "DribbleAnimationFlag",
+		Callback = function(Options)
+			CurrentDribbleAnimation = Options[1]
+		end,
+	})
+
+	local function playDribbleAnimation()
+		local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			local dribbleAnimation = humanoid:LoadAnimation(DribbleAnimationsPath[CurrentDribbleAnimation])
+			dribbleAnimation:Play()
+		end
+		ReplicatedStorage.Packages.Knit.Services.BallService.RE.Dribble:FireServer()
+	end
+
+	local function isPlayingSlideAnimation(character)
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+				if track.Animation == SlideAnimationPath then
+print("playing anim")
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local function detectNearbyPlayers()
+		if not autoDribbleEnabled or isCooldown then return end
+
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer and player.Character then
+				local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+				if distance <= DetectionRadius and isPlayingSlideAnimation(player.Character) then
+print("worked")
+					playDribbleAnimation()
+					isCooldown = true
+					wait(CooldownTime)
+					isCooldown = false
+				end
+			end
+		end
+	end
+
+	RunService.Heartbeat:Connect(detectNearbyPlayers)
+
+end
