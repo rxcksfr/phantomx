@@ -7,7 +7,7 @@ return function(Window)
 	local SlideAnimationPath = ReplicatedStorage.Assets.ReplicatedAnims.Movement.Slide
 	local DribbleAnimationsPath = ReplicatedStorage.Assets.ReplicatedAnims.Dribbles
 print("started")
-	local DetectionRadius = 10
+	local DetectionRadius = 15
 	local CooldownTime = 1
 	local isCooldown = false
 	local autoDribbleEnabled = false
@@ -46,6 +46,7 @@ print("started")
 	end
 
 	local function isPlayingSlideAnimation(character)
+print("test something")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if humanoid then
 			for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
@@ -60,7 +61,7 @@ print("playing anim")
 
 	local function detectNearbyPlayers()
 		if not autoDribbleEnabled or isCooldown then return end
-
+print("auto dribble on")
 		for _, player in ipairs(Players:GetPlayers()) do
 			if player ~= LocalPlayer and player.Character then
 				local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
