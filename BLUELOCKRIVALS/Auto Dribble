@@ -6,7 +6,7 @@ return function(Window)
 	local LocalPlayer = Players.LocalPlayer
 	local SlideAnimationPath = ReplicatedStorage.Assets.ReplicatedAnims.Movement.Slide
 	local DribbleAnimationsPath = ReplicatedStorage.Assets.ReplicatedAnims.Dribbles
-
+print("started")
 	local DetectionRadius = 10
 	local CooldownTime = 1
 	local isCooldown = false
@@ -50,6 +50,7 @@ return function(Window)
 		if humanoid then
 			for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
 				if track.Animation == SlideAnimationPath then
+print("playing anim")
 					return true
 				end
 			end
@@ -64,6 +65,7 @@ return function(Window)
 			if player ~= LocalPlayer and player.Character then
 				local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
 				if distance <= DetectionRadius and isPlayingSlideAnimation(player.Character) then
+print("worked")
 					playDribbleAnimation()
 					isCooldown = true
 					wait(CooldownTime)
