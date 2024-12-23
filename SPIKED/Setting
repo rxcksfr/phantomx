@@ -153,6 +153,7 @@ return function(backSet, frontSet, player, players, window, autoSetEnabled, setP
 		Hold = false,
 		Callback = function()
 			setpowerslider:Set(quicksetpresetpower)
+			setoffsetyslider:Set(quicksetpresetoffset)
 		end    
 	})
 	
@@ -162,6 +163,7 @@ return function(backSet, frontSet, player, players, window, autoSetEnabled, setP
 		Hold = false,
 		Callback = function()
 			setpowerslider:Set(highsetpresetpower)
+			setoffsetyslider:Set(highsetpresetoffset)
 		end    
 	})
 	
@@ -171,6 +173,7 @@ return function(backSet, frontSet, player, players, window, autoSetEnabled, setP
 		Hold = false,
 		Callback = function()
 			setpowerslider:Set(medsetpresetpower)
+			setoffsetyslider:Set(medsetpresetoffset)
 		end    
 	})
 	
@@ -180,11 +183,11 @@ return function(backSet, frontSet, player, players, window, autoSetEnabled, setP
 		Hold = false,
 		Callback = function()
 			if setOffsetZ > 0 then
-				setOffsetZ = setOffsetZ - setOffsetZ - setOffsetZ	
+				setoffsetzslider:Set(setOffsetZ - setOffsetZ - setOffsetZ)
 			elseif setOffsetZ < 0 then
-				setOffsetZ = setOffsetZ - setOffsetZ - setOffsetZ
+				setoffsetzslider:Set(setOffsetZ - setOffsetZ - setOffsetZ)
 			else
-				setOffsetZ = 0
+				setoffsetzslider:Set(0)
 			end
 		end    
 	})
